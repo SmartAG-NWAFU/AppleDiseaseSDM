@@ -14,14 +14,14 @@ src_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def assign_letters(models, pval_matrix, data, metric):
-    """根据模型性能中位数排序并分配显著性字母标签（支持多个标签）"""
+    """Assign significance letter labels based on model performance median ranking (supports multiple labels)"""
     from collections import defaultdict
 
-    # 按中位数性能从高到低排序模型
+    # Sort models by median performance from high to low
     medians = {model: np.median(data[data['Model'] == model][metric]) for model in models}
     sorted_models = sorted(models, key=lambda x: -medians[x])
 
-    # 构建显著性差异对
+    # Build significance difference pairs
     sig_pairs = defaultdict(set)
     for (model1, model2) in combinations(sorted_models, 2):
         p = pval_matrix.loc[model1, model2]
@@ -29,19 +29,19 @@ def assign_letters(models, pval_matrix, data, metric):
             sig_pairs[model1].add(model2)
             sig_pairs[model2].add(model1)
 
-    # 构建非显著性分组（cliques）
+    # Build non-significant groups (cliques)
     groups = []
     for model in sorted_models:
         added = False
         for group in groups:
-            # 当前模型与组内所有模型均无显著差异才加入
+            # Add current model to group only if it has no significant difference with all models in the group
             if all(m not in sig_pairs[model] for m in group):
                 group.append(model)
                 added = True
         if not added:
             groups.append([model])
 
-    # 分配字母，每个组一个字母，模型可能被分配多个字母
+    # Assign letters, one letter per group, models may be assigned multiple letters
     letter_map = defaultdict(str)
     for i, group in enumerate(groups):
         letter = chr(97 + i)  # 'a', 'b', 'c', ...
@@ -52,14 +52,14 @@ def assign_letters(models, pval_matrix, data, metric):
     return letter_map
 
 def perform_test(data, metric):
-    """执行统计检验并返回字母标记"""
+    """Perform statistical test and return letter labels"""
     models = data['Model'].unique()
     
 
-    # Kruskal + Dunn (非参数)
+    # Kruskal + Dunn (non-parametric)
     pvals = sp.posthoc_dunn(data, val_col=metric, group_col='Model', p_adjust='bonferroni')
 
-    # 确保矩阵对称
+    # Ensure matrix symmetry
     models_sorted = sorted(models)
     pvals = pvals.reindex(index=models_sorted, columns=models_sorted)
     # print(pvals)
@@ -69,11 +69,11 @@ def perform_test(data, metric):
 
 
 def analyze_and_save_results():
-    """主分析函数"""
-    # 读取数据
+    """Main analysis function"""
+    # Read data
     input_path = f'{src_dir}/../results/auc_tss.csv'
     df = pd.read_csv(input_path)
-    # 列名标准化
+    # Standardize column names
     column_map = {
         'model': 'Model',
         'auc': 'AUC',
@@ -82,13 +82,13 @@ def analyze_and_save_results():
     }
     df = df.rename(columns={k:v for k,v in column_map.items() if k in df.columns})
     
-    # 初始化结果存储
+    # Initialize result storage
     all_results = []
     required_models = ['GLM', 'GAM', 'SVM', 'MaxEnt', 'RF']
 
-    # 遍历每个class和指标
+    # Iterate through each class and metric
     for (class_name, group_df), metric in itertools.product(df.groupby('class'), ['AUC', 'TSS']):
-        print(f"\n正在分析 {class_name} 类别的 {metric} 指标...")
+        print(f"\nAnalyzing {metric} metric for {class_name} class...")
 
         letter_map = perform_test(group_df, metric)
         
@@ -100,10 +100,10 @@ def analyze_and_save_results():
                 'significance': letter
             })
 
-    # 转换为DataFrame
+    # Convert to DataFrame
     result_df = pd.DataFrame(all_results)
     
-    # 转换为宽格式
+    # Convert to wide format
     try:
         pivot_df = result_df.pivot_table(
             index=['class', 'model'], 
@@ -114,11 +114,11 @@ def analyze_and_save_results():
         pivot_df.columns.name = None
         pivot_df = pivot_df[['class', 'model', 'AUC', 'TSS']]
     except KeyError as e:
-        print("转换宽表时出错，当前数据:")
+        print("Error converting to wide format, current data:")
         print(result_df)
         raise
 
-    # 保存结果
+    # Save results
     output_file = f'{src_dir}/../results/statistical_significance_results.csv'
     pivot_df.to_csv(output_file, index=False)
 

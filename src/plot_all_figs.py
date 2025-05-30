@@ -142,7 +142,7 @@ def fig1_research_map():
 
 def fig2_different_sdms():
 
-    # 定义文件路径和文件名
+    # Define file paths and filenames
     file_path = f'{src_dir}/../results/compare_models_predictions'
     file_names = ['valsa.tif', 'ring.tif', 'alternaria.tif']
 
@@ -161,14 +161,14 @@ def fig2_different_sdms():
     proj = crate_proj()
 
     fig = plt.figure(figsize=(6.89, 10.2))#/2.54
-    # 定义绘图参数
+    # Define plotting parameters
     nrows = 5
     ncols = 3
 
-    # 读取数据并绘制图像
+    # Read data and plot images
     for i in range(nrows):
         for j in range(ncols):
-            # 读取文件
+            # Read file
             file_name = file_names[j]
             file = os.path.join(file_path, file_name)
             ax = fig.add_subplot(5,3,i*3+j+1, projection=proj)
@@ -176,13 +176,13 @@ def fig2_different_sdms():
 
             ax.text(0.05, 0.95,  f"({string.ascii_lowercase[i*3+j]})", transform=ax.transAxes, 
                     size=10, va='top')
-            # 读取tif文件
+            # Read tif file
             with rasterio.open(file) as src:
-                data = src.read(i+1)#加载不同波段
+                data = src.read(i+1)#Load different bands
                 transform = src.transform
                 bounds = src.bounds
                 
-            # 过滤数据
+            # Filter data
             if i == 4:
                 data[data<-10] = np.nan
             else:    
@@ -192,7 +192,7 @@ def fig2_different_sdms():
             bin_disease = threshould_bins[j]
             data_classes = np.digitize(data, bin_disease, right=True)
             
-            # 把原始数据中为 np.nan 的地方在分类结果中也设置为 np.nan
+            # Set np.nan in classification results where original data is np.nan
             data_classes = np.where(np.isnan(data), np.nan, data_classes)
             
             # Plot data with classified colors
@@ -230,38 +230,38 @@ def fig2_different_sdms():
                 plt.legend(handles=handles, labels=labels, loc='upper center', bbox_to_anchor=(0.3,0.9,0.5,0.5),
                         bbox_transform=ax.transAxes, labelspacing=0.3, ncol=5, frameon=False, prop={'size': 12}, 
                         handlelength=2, handleheight=1)
-    # 调整子图之间的距离
+    # Adjust spacing between subplots
     plt.subplots_adjust(wspace=-0.2, hspace=0)
     # save the figure
     fig.savefig(f'{src_dir}/../figs/fig2_compare_models.jpg', dpi=300, bbox_inches='tight')
 
 def fig3_model_performance():
     """
-    绘制模型在不同类别下的 TSS 和 AUC 表现条形图。
+    Plot bar charts of model performance (TSS and AUC) across different categories.
 
-    参数：
-        csv_path (str): CSV 文件路径，包含列 ["class", "tss", "auc", "model"]
-        save_path (str): 若提供，将保存图像到此路径（建议提供完整路径，如 .jpg/.png）
+    Parameters:
+        csv_path (str): Path to CSV file containing columns ["class", "tss", "auc", "model"]
+        save_path (str): If provided, save the figure to this path (recommended to provide full path, e.g. .jpg/.png)
     """
     csv_path=f'{src_dir}/../results/auc_tss.csv'
     static_path = f'{src_dir}/../results/statistical_significance_results.csv'
     save_path=f'{src_dir}/../figs/fig3_model_evaluation.jpg'
-    # 设置主题与字体
+    # Set theme and font
     custom_params = {'font.family': ['Times New Roman']}
     sns.set_theme(style="ticks", rc=custom_params)
     sns.set_context("talk")
 
     colors = ['#8ECFC9', '#FFBE7A', '#FA7F6F', '#82B0D2', '#BEB8DC']
-    # 创建图形和子图
+    # Create figure and subplots
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(6.89, 3.38))
 
-    # 读取数据
+    # Read data
     df = pd.read_csv(csv_path)
     static_df = pd.read_csv(static_path)
-    # 保证列名一致
+    # Ensure consistent column names
     static_df.columns = static_df.columns.str.lower()
 
-    # ------------ 第一个图：TSS ------------
+    # ------------ First plot: TSS ------------
     ax1 = axes[0]
     sns.barplot(
         data=df, x="class", y="tss", hue="model", palette=colors,
@@ -285,10 +285,10 @@ def fig3_model_performance():
         .reset_index())
     class_order = ["Valsa canker", "Apple ring rot", "Alternaria blotch"]
     model_order = ["GLM", "GAM", "SVM", "MaxEnt","RF"]
-    # 设置为有序分类变量
+    # Set as ordered categorical variables
     group_stats["class"] = pd.Categorical(group_stats["class"], categories=class_order, ordered=True)
     group_stats["model"] = pd.Categorical(group_stats["model"], categories=model_order, ordered=True)
-    # 按指定顺序排序
+    # Sort by specified order
     group_stats = group_stats.sort_values(["model","class"]).reset_index(drop=True)
     
     for i, bar in enumerate(ax1.patches):
@@ -310,7 +310,7 @@ def fig3_model_performance():
             prop={'size': 8}, fontsize='large'
     )
 
-    # ------------ 第二个图：AUC ------------
+    # ------------ Second plot: AUC ------------
     ax2 = axes[1]
     sns.barplot(
         data=df, x="class", y="auc", hue="model", palette=colors,
@@ -336,10 +336,10 @@ def fig3_model_performance():
         .reset_index())
     class_order = ["Valsa canker", "Apple ring rot", "Alternaria blotch"]
     model_order = ["GLM", "GAM", "SVM", "MaxEnt","RF"]
-    # 设置为有序分类变量
+    # Set as ordered categorical variables
     group_stats["class"] = pd.Categorical(group_stats["class"], categories=class_order, ordered=True)
     group_stats["model"] = pd.Categorical(group_stats["model"], categories=model_order, ordered=True)
-    # 按指定顺序排序
+    # Sort by specified order
     group_stats = group_stats.sort_values(["model","class"]).reset_index(drop=True)
 
     for i, bar in enumerate(ax2.patches):
@@ -347,7 +347,7 @@ def fig3_model_performance():
             break
         row = group_stats.iloc[i]
         x = bar.get_x() + bar.get_width() / 2
-        y = row["mean"] + row["std"]  # 误差棒上方
+        y = row["mean"] + row["std"]  # Above error bar
 
         letter_row = static_df[
             (static_df['class'] == row['class']) & (static_df['model'] == row['model'])
@@ -360,14 +360,14 @@ def fig3_model_performance():
         for spine in ax.spines.values():
             spine.set_linewidth(0.6)
     plt.subplots_adjust(wspace=0.3) 
-    # 保存图像（如指定路径）
+    # Save figure (if path specified)
     if save_path:
         fig.savefig(save_path, dpi=300, bbox_inches='tight')
 
 
 def fig4_ensemble_results():
 
-    # === 配置部分 ===
+    # === Configuration section ===
     colors = ['#A9B8C6', '#96C37D', '#F3D266', '#D8383A']
     cmap = ListedColormap(colors)
     file_names = ['valsa2.tif', 'ring2.tif', 'alternaria2.tif']
@@ -376,17 +376,17 @@ def fig4_ensemble_results():
     df = pd.DataFrame(index=['Usuitable', 'Low suitable', 'Moderately suitable', 'High suitable'],
                     columns=titles)
 
-    # 路径
+    # Paths
     data_dir = f'{src_dir}/../results/compare_models_predictions/ensemble/'
     fig_path = f'{src_dir}/../figs/fig4_ensemble.jpg'
     fig_path_abstract = f'{src_dir}/../figs/abstract_ensemble.jpg'
 
-    # 地图数据
+    # Map data
     china, nine = laod_china_shp() 
     apple_planting = load_apple_planting_area()
     proj = crate_proj()
 
-    # 创建图和布局
+    # Create figure and layout
     fig = plt.figure(figsize=(6.89, 6.2))
     gs = gridspec.GridSpec(2, 2, figure=fig)
 
@@ -432,7 +432,7 @@ def fig4_ensemble_results():
         gl.rotate_labels = False
         gl.xpadding = 5
 
-    # 地图图 (1~3)
+    # Map plots (1~3)
     for i, (fname, title, label) in enumerate(zip(file_names, titles, ['(a)', '(b)', '(c)'])):
         row, col = divmod(i, 2)
         ax = fig.add_subplot(gs[row, col], projection=proj)
@@ -447,7 +447,7 @@ def fig4_ensemble_results():
 
         process_and_plot_tif(ax, f'{data_dir}{fname}', title, label, bins, title, label_sides)
 
-    # 第四图（堆叠柱状图）
+    # Fourth plot (stacked bar chart)
     ax4 = fig.add_subplot(gs[1, 1])
     df_pl = df.iloc[1:].T * 28.470686309 / 1000
     bar_colors = colors[1:]
@@ -462,7 +462,7 @@ def fig4_ensemble_results():
     ax4.xaxis.set_tick_params(rotation=0)
     ax4.text(0.05, 0.95, "(d)", transform=ax4.transAxes, size=12, va='top')
 
-    # 图例
+    # Legend
     handles = [mpatches.Patch(color=color, label=label) for color, label in zip(colors, labels)]
     plt.legend(handles=handles, loc='upper center', bbox_to_anchor=(-0.2, 1.8, 0.5, 0.5),
             labelspacing=1.5, ncol=4, frameon=False, prop={'size': 10},
@@ -472,7 +472,7 @@ def fig4_ensemble_results():
     fig.savefig(fig_path, dpi=300, bbox_inches='tight')
 
 def fig5_combined_hight_suitability():
-    # read combined area
+    # Read combined area
     df = pd.read_csv('../results/combined_hight_suitability_area.csv')
     proj = crate_proj()
     fig = plt.figure(figsize=(6.89, 6.89))
@@ -487,7 +487,7 @@ def fig5_combined_hight_suitability():
     cmap = ListedColormap(new_palette)
     china, nine = laod_china_shp()
     apple_planting = load_apple_planting_area()
-    # 读取tif文件
+    # Read tif file
     with rasterio.open('../results/compare_models_predictions/ensemble/conbined_high_suitables_2models_2025529.tif') as src:
         data = src.read(1)
         bounds = src.bounds
@@ -537,11 +537,11 @@ def fig5_combined_hight_suitability():
         kind='bar',
         stacked=True,
         ax=bar_ax,
-        color=new_palette[1:],  # 跳过 'No disease'
+        color=new_palette[1:],  # Skip 'No disease'
         legend=False
     )
 
-    # 设置 y 轴标签和格式
+    # Set y-axis labels and format
     bar_ax.set_ylabel("Area (10$^3$ Km$^2$)", fontsize=10)
     bar_ax.tick_params(axis='y', labelsize=10)
     bar_ax.yaxis.set_ticks_position('right')
@@ -566,13 +566,13 @@ def fig_s_maxent_rf_difference():
 
     file_names = ['valsa.tif', 'ring.tif', 'alternaria.tif']
 
-    # 分类边界和颜色
-    bounds = [0, 0.2, 0.5, 1.01]  # 添加一点点超出1的范围避免边界误差
-    colors = ['#d4f7c5', '#fff79a', '#f99b7d']  # 浅绿 - 黄 - 橙
+    # Classification boundaries and colors
+    bounds = [0, 0.2, 0.5, 1.01]  # Add a small range beyond 1 to avoid boundary errors
+    colors = ['#d4f7c5', '#fff79a', '#f99b7d']  # Light green - Yellow - Orange
     cmap = mcolors.ListedColormap(colors)
     norm = mcolors.BoundaryNorm(bounds, cmap.N)
 
-    # 地图投影
+    # Map projection
     proj = crate_proj()
     fig = plt.figure(figsize=(6.89, 6.89))
     grid = plt.GridSpec(1, 1, wspace=0, hspace=0)
@@ -595,7 +595,7 @@ def fig_s_maxent_rf_difference():
         tif_extent = [raster_bounds.left, raster_bounds.right, raster_bounds.bottom, raster_bounds.top]
         data = np.ma.masked_where(data == 0, data)
 
-        # 分类渲染差值图
+        # Render difference map with classification
         im = ax.imshow(
             data,
             origin='upper',
@@ -607,12 +607,12 @@ def fig_s_maxent_rf_difference():
             alpha=1
         )
 
-        # 绘制矢量图层
+        # Draw vector layers
         nine.plot(ax=ax, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=1, alpha=0.5, zorder=1)
         china.plot(ax=ax, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=0.4, zorder=3, alpha=0.5)
         apple_planting.plot(ax=ax, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=1, zorder=3, alpha=0.5)
 
-        # 添加标签
+        # Add labels
         for idx, row in apple_planting.iterrows():
             geom = row.geometry
             if geom.geom_type == 'Polygon':
@@ -637,7 +637,7 @@ def fig_s_maxent_rf_difference():
                             ncol=1, frameon=False, prop={'size': 10}, title='Difference in Suitability (0–1)', 
                             handlelength=3, handleheight=1.5)
 
-        # 添加网格线
+        # Add grid lines
         gl = ax.gridlines(draw_labels=True, linewidth=0, color='gray', alpha=0.5, linestyle='--')
         gl.top_labels = False
         gl.right_labels = False
@@ -664,15 +664,15 @@ def fig_s_apple_area_yield():
     cmap = ListedColormap(colors)
 
     apple_data = pd.read_csv(f'{src_dir}/../data/2019apple_yield.csv')
-    # 按照'regions'列进行分组并计算平均值
+    # Group by 'regions' column and calculate mean values
     grouped_df = apple_data.groupby('pr_name')[['area(kha)','yield(kton)','yield(ton_per_ha)']].mean()
     apple_planting = apple_planting.merge(grouped_df, on='pr_name')
 
-    # 设置投影
+    # Set projection
     proj = ccrs.LambertConformal(central_longitude=105, standard_parallels=(25, 47))
     fig = plt.figure(figsize=(14, 12))
 
-    # ---- 子图1：背景 + TIFF图层 + 多边形标注 ----
+    # ---- Subplot 1: Background + TIFF layer + Polygon labels ----
     ax = fig.add_subplot(2, 2, 1, projection=proj)
     ax.set_extent([80, 130, 18, 53], crs=ccrs.PlateCarree())
     nine.plot(ax=ax, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=0.4, zorder=1, alpha=0.5)
@@ -704,7 +704,7 @@ def fig_s_apple_area_yield():
     scale_bar(ax, (0.2, 0.05), 500)
     ax.text(0.05, 0.95, "(a)", transform=ax.transAxes, size=16, weight='bold', va='top')
 
-    # ---- 子图2：种植面积 ----
+    # ---- Subplot 2: Planting area ----
     ax1 = fig.add_subplot(2, 2, 2, projection=proj)
     ax1.set_extent([80, 130, 18, 53], crs=ccrs.PlateCarree())
     nine.plot(ax=ax1, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=0.4, zorder=1, alpha=0.5)
@@ -720,7 +720,7 @@ def fig_s_apple_area_yield():
     apple_planting.plot(ax=ax1, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=1, zorder=3, alpha=0.5)
     ax1.text(0.05, 0.95, "(b)", transform=ax1.transAxes, size=16, weight='bold', va='top')
 
-    # ---- 子图3：产量 ----
+    # ---- Subplot 3: Yield ----
     ax2 = fig.add_subplot(2, 2, 3, projection=proj)
     ax2.set_extent([80, 130, 18, 53], crs=ccrs.PlateCarree())
     nine.plot(ax=ax2, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=0.4, zorder=1, alpha=0.5)
@@ -736,7 +736,7 @@ def fig_s_apple_area_yield():
     apple_planting.plot(ax=ax2, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=1, zorder=3, alpha=0.5)
     ax2.text(0.05, 0.95, "(c)", transform=ax2.transAxes, size=16, weight='bold', va='top')
 
-    # ---- 子图4：单位面积产量 ----
+    # ---- Subplot 4: Yield per unit area ----
     ax3 = fig.add_subplot(2, 2, 4, projection=proj)
     ax3.set_extent([80, 130, 18, 53], crs=ccrs.PlateCarree())
     nine.plot(ax=ax3, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=0.4, zorder=1, alpha=0.5)
@@ -752,7 +752,7 @@ def fig_s_apple_area_yield():
     apple_planting.plot(ax=ax3, transform=ccrs.PlateCarree(), facecolor='none', edgecolor='k', lw=1, zorder=3, alpha=0.5)
     ax3.text(0.05, 0.95, "(d)", transform=ax3.transAxes, size=16, weight='bold', va='top')
 
-    # ---- 布局 & 保存 ----
+    # ---- Layout & Save ----
     plt.subplots_adjust(wspace=-0.1, hspace=0)
 
     fig.savefig(f'{src_dir}/../figs/fig_s_apple_area_yield.jpg',
