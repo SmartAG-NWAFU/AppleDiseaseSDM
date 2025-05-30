@@ -11,48 +11,20 @@ This project is based on the study:
 - **​High-Risk Regions:** Bohai Bay, Loess Plateau, and Old Course of the Yellow River were identified as ​highly suitable​ for disease outbreaks
 ---
 
-## Getting Started
-
-### Prerequisites
-1. R version 4.4.2 
-2. Main R Packages:
-   - `sdm(1.2.52)`
-   - `usdm(2.1.7)`
-   - `raster(3.6.30)`
-   - `tidyverse(2.0.0)`
-
 ### Installation
 1. Clone this repository:
    ```bash
-   git clone https://github.com/SmartAG-NWAFU/ALBClimateShift.git
-2. Install the required R packages.
+   git clone https://github.com/SmartAG-NWAFU/AppleDiseaseSDM.git
+2. Install the required python packages.
 
 ### Data Description
 
-The dataset includes:
-1. **ALB presence Records**: Collected from orchard surveys, public databases, and literature.
-2. **Environmental Variables**: Climatic data (temperature, precipitation, etc.) from CMIP6. The topographic variables were derived from the Data Center of Resources and Environmental Sciences (http://www.resdc.cn/).
+** presence Records**: The shp file recording the occurrence points of three apple diseases
 
-### Project Structure
-```
-ALBClimateShift/
-├── data/                  # Raw and processed data
-├── src/                   # Analysis scripts
-│   ├── 01_model.R
-│   ├── 02_simulated_and_predicted.R
-│   ├── 03_results_analysis.R
-├── figs/                  # Output figures
-├── README.md              # Project documentation
-```
 ### License
 This project is licensed under a custom academic use license. See the [LICENSE](./LICENSE) file for details.
 
 ### Acknowledgments
-
-This work was supported by:
-	• College of Soil and Water Conservation Science and Engineering, Northwest A&F University
-	• State Key Laboratory of Soil Erosion and Dryland Farming on the Loess Plateau
-	• China Agricultural University
 
 For inquiries, contact:
 	• Prof. Qiang Yu: yuq@nwafu.edu.cn
